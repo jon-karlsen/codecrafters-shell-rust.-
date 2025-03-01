@@ -2,7 +2,7 @@
 use std::io::{self, Write};
 
 fn main() {
-    while {
+    loop {
         // Print prompt
         print!("$ ");
         io::stdout().flush().unwrap();
