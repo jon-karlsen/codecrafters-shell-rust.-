@@ -1,3 +1,5 @@
+use std::os::unix::fs::PermissionsExt;
+
 const CMD_EXIT: &str = "exit";
 const CMD_ECHO: &str = "echo";
 const CMD_TYPE: &str = "type";
@@ -25,21 +27,47 @@ impl Command {
             .collect::<Vec<String>>()
             .join(" ");
 
-        if args_string.len() == 0 {
+        if args_string.is_empty() {
             Err("No arguments provided".to_owned())
         } else {
             Ok(args_string)
         }
     }
 
+    fn path_dirs() -> Result<Vec<String>, String> {
+        std::env::var("PATH")
+            .map(|p| p.split(":").map(|s| s.to_string()).collect::<Vec<String>>())
+            .map_err(|err| err.to_string())
+    }
+
     fn get_type(&self) -> Result<String, String> {
         let args_string = self.args_to_str()?;
 
-        if !CMD_ARR.contains(&args_string.as_str()) {
-            Ok(format!("{}: not found", args_string))
-        } else {
-            Ok(format!("{} is a shell builtin", args_string))
+        if CMD_ARR.contains(&args_string.as_str()) {
+            return Ok(format!("{} is a shell builtin", args_string))
         }
+
+        for dir in Command::path_dirs()? {
+            let x = std::fs::read_dir(&dir).map_err(|e| e.to_string())?;
+
+            for r in x.flatten() {
+                let metadata = r.metadata().map_err(|e| e.to_string())?;
+                if metadata.is_dir() {
+                    continue;
+                }
+
+                let permissions = metadata.permissions().mode() & 0o111 != 0;
+                let path = r.path().to_str().unwrap().to_owned();
+                let split = path.split("/").collect::<Vec<&str>>();
+                let file = split.last().unwrap();
+
+                if &args_string == file && permissions {
+                    return Ok(format!("{} is {}", args_string, path));
+                }
+            }
+        }
+
+        Ok(format!("{}: not found", args_string))
     }
 
     fn invalid_command(&self) -> Result<String, String> {
