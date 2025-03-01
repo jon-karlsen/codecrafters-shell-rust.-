@@ -36,7 +36,8 @@ impl Command {
         if !CMD_ARR.contains(&self.cmd.as_str()) {
             self.invalid_command()
         } else {
-            Ok(format!("{} is a shell builtin", self.cmd))
+            let args_string = self.args_to_str()?;
+            Ok(format!("{} is a shell builtin", args_string))
         }
     }
 
