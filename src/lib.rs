@@ -33,10 +33,11 @@ impl Command {
     }
 
     fn get_type(&self) -> Result<String, String> {
-        if !CMD_ARR.contains(&self.cmd.as_str()) {
+        let args_string = self.args_to_str()?;
+
+        if !CMD_ARR.contains(&args_string.as_str()) {
             self.invalid_command()
         } else {
-            let args_string = self.args_to_str()?;
             Ok(format!("{} is a shell builtin", args_string))
         }
     }
