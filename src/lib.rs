@@ -36,14 +36,14 @@ impl Command {
         let args_string = self.args_to_str()?;
 
         if !CMD_ARR.contains(&args_string.as_str()) {
-            self.invalid_command()
+            Ok(format!("{}: not found", args_string))
         } else {
             Ok(format!("{} is a shell builtin", args_string))
         }
     }
 
     fn invalid_command(&self) -> Result<String, String> {
-        Err(format!("{}: command not found", self.cmd))
+        Ok(format!("{}: command not found", self.cmd))
     }
 
     pub fn run(&self) -> Result<String, String> {

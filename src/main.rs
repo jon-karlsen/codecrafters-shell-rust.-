@@ -16,9 +16,11 @@ fn main() {
         let cmd = Command::new(&input);
 
         match cmd.run() {
-            Ok(output) => println!("{}", output.trim()),
-            Err(err) => {
-                println!("{}", err.trim());
+            Ok(output) => {
+                println!("{}", output.trim());
+                continue;
+            },
+            Err(_err) => {
                 break;
             }
         }
