@@ -1,6 +1,8 @@
 #[allow(unused_imports)]
 use std::io::{self, Write};
 
+use codecrafters_shell::Command;
+
 fn main() {
     loop {
         // Print prompt
@@ -11,11 +13,14 @@ fn main() {
         let stdin = io::stdin();
         let mut input = String::new();
         stdin.read_line(&mut input).unwrap();
+        let cmd = Command::new(&input);
 
-        if input.trim() == "exit 0" {
-            break;
+        match cmd.run() {
+            Some(output) => {
+                println!("{}", output.trim());
+                continue;
+            },
+            None => break
         }
-
-        println!("{}: command not found", input.trim());
     }
 }
